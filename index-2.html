@@ -33,7 +33,6 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 /* Floating glass navigation, inspired by the supplied Telegram reference. */
-@media(max-width:800px){
   .main{padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))}
   .mobile-nav{
     --glass-accent:#008cff;
@@ -57,6 +56,9 @@
     box-shadow:0 8px 32px rgba(35,27,47,.14),0 2px 8px rgba(35,27,47,.035),inset 0 1px 0 rgba(255,255,255,.96),inset 0 -1px 0 rgba(255,255,255,.48);
     isolation:isolate;
     overflow:hidden;
+    touch-action:none;
+    -webkit-user-select:none;
+    user-select:none;
   }
   .mobile-nav::before{
     content:'';
@@ -85,14 +87,10 @@
     line-height:1.2;
     font-weight:700;
     box-shadow:none;
-    touch-action:manipulation;
+    touch-action:none;
     transition:color .18s ease,background-color .18s ease,transform .2s cubic-bezier(.2,.8,.2,1);
   }
-  .mobile-nav button.active{
-    background:rgba(118,118,128,.13);
-    color:var(--glass-accent);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 1px 0 rgba(255,255,255,.2);
-  }
+  .mobile-nav button.active{background:transparent;color:var(--glass-accent);box-shadow:none}
   .mobile-nav button>span:not(.nav-count){
     max-width:100%;
     overflow:hidden;
@@ -103,7 +101,7 @@
   .mobile-nav button:hover:not(:disabled){filter:none}
   .mobile-nav button:active:not(:disabled){
     transform:scale(.94);
-    background:rgba(118,118,128,.18);
+    background:transparent;
     filter:none;
   }
   .mobile-nav button:focus-visible{outline:2px solid var(--glass-accent);outline-offset:-3px}
@@ -124,24 +122,91 @@
     line-height:1;
     font-weight:700;
   }
-}
 @media(max-width:370px){
   .mobile-nav{width:calc(100% - 20px);padding:5px;gap:1px}
   .mobile-nav button{font-size:10px;min-height:59px;padding-inline:2px}
   .mobile-nav button>svg{width:24px;height:24px}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  @media(max-width:800px){.mobile-nav{background:rgba(250,250,252,.97)}}
+  .mobile-nav{background:rgba(250,250,252,.97)}
 }
 @media(prefers-reduced-transparency:reduce){
   .mobile-nav{-webkit-backdrop-filter:none;backdrop-filter:none;background:#f8f8fa}
 }
 @media(prefers-contrast:more){
   .mobile-nav{background:rgba(255,255,255,.95);border-color:#a7a3ad}
-  .mobile-nav button.active{background:#e5e5ea;color:#006bd6}
+  .mobile-nav .glass-selection{background:#e5e5ea}
+  .mobile-nav button.active{color:#006bd6}
 }
 @media(prefers-reduced-motion:reduce){.mobile-nav button{transition:none}}
 
+.mobile-nav .glass-selection{
+  position:absolute;
+  z-index:0;
+  top:6px;
+  bottom:6px;
+  left:0;
+  width:var(--glass-width,calc((100% - 18px)/4));
+  transform:translate3d(var(--glass-x,6px),0,0);
+  transform-origin:center;
+  border-radius:999px;
+  background:rgba(118,118,128,.13);
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(255,255,255,.18),0 1px 0 rgba(255,255,255,.2);
+  pointer-events:none;
+  transition:transform .38s cubic-bezier(.22,1,.36,1),width .2s ease,background-color .2s ease,box-shadow .2s ease;
+  will-change:transform;
+}
+.mobile-nav.is-pressed .glass-selection{
+  background:rgba(170,170,180,.19);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(255,255,255,.4),0 3px 12px rgba(40,35,55,.08);
+}
+.mobile-nav.is-dragging .glass-selection{
+  transform:translate3d(var(--glass-x,6px),0,0) scale(1.035,1.06);
+  background:rgba(190,190,200,.2);
+  transition:none;
+}
+.mobile-nav.is-dragging button.active{color:#343438}
+.mobile-nav.is-dragging button.is-preview{color:var(--glass-accent)}
+.mobile-nav button{cursor:pointer}
+.mobile-nav.is-dragging,.mobile-nav.is-dragging button{cursor:grabbing}
+@media(min-width:801px){.mobile-nav{left:calc(50% + 112px);width:calc(100% - 260px)}}
+@media(min-width:801px) and (max-width:1200px){.mobile-nav{left:calc(50% + 98px);width:calc(100% - 228px)}}
+@media(max-width:370px){.mobile-nav .glass-selection{top:5px;bottom:5px}}
+@media(prefers-reduced-motion:reduce){.mobile-nav .glass-selection{transition:none;will-change:auto}.mobile-nav.is-dragging .glass-selection{transform:translate3d(var(--glass-x,6px),0,0)}}
+
+
+/* Convex lens: magnification follows the glass selection continuously. */
+.mobile-nav .glass-selection{
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.66),transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.32),transparent 65%),rgba(118,118,128,.13);
+  box-shadow:inset 0 1.5px 1px rgba(255,255,255,.95),inset 0 -1px 2px rgba(255,255,255,.6),inset 1px 0 2px rgba(255,255,255,.55),inset -1px 0 2px rgba(255,255,255,.55),0 2px 6px rgba(40,35,55,.06);
+}
+.mobile-nav .glass-selection::after{
+  content:'';
+  position:absolute;
+  inset:1px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.35),transparent 32%,transparent 68%,rgba(255,255,255,.24));
+  border-top:1px solid rgba(255,255,255,.7);
+  border-bottom:1px solid rgba(255,255,255,.32);
+}
+.mobile-nav button>svg{
+  flex-shrink:0;
+  transform:translateY(var(--lens-rise,0px)) scale(var(--lens-icon-scale,1));
+  transform-origin:50% 60%;
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+}
+.mobile-nav button>span:not(.nav-count){
+  transform:scale(var(--lens-label-scale,1));
+  transform-origin:50% 25%;
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+}
+.mobile-nav.is-dragging button>svg,.mobile-nav.is-dragging button>span:not(.nav-count){transition:none}
+@media(prefers-contrast:more){.mobile-nav .glass-selection{background:#e5e5ea}}
+@media(prefers-reduced-motion:reduce){
+  .mobile-nav button>svg,.mobile-nav button>span:not(.nav-count){transform:none;transition:none}
+}
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js?64"></script>
 </head>
@@ -264,7 +329,7 @@ function navItems(s){return [['home','home','Главная'],['topics','book','
 function brand(){return `<div class="brand"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTM3IDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNhKSIgZmlsbD0iIzAwMCI+PHBhdGggZD0iTTE3LjAzMiAyNy41MzVjMC0yLjk5NS0xLjc4LTUuMTU1LTYuMjQ4LTUuNjY3IDAtLjYwNyAwLTEuMTk0LjAyLTEuNzQ0SDYuMzM0YzAgLjU2OS4wMiAxLjE1Ni4wMiAxLjc0NC00LjQxMi41My02LjE5MiAyLjY3Mi02LjE5MiA1LjY2NyAwIDMuMDMzIDEuODE4IDUuMTU2IDYuMTkxIDUuNjY3IDAgLjU4OC0uMDE5IDEuMTU3LS4wMTkgMS43MDZoNC40NjhjLS4wMTktLjUzLS4wMTktMS4xLS4wMzgtMS42ODcgNC40NjgtLjUxMSA2LjI2Ny0yLjYzNCA2LjI2Ny01LjY4NlptLTYuMjY3IDEuOTE1YzAtLjcyIDAtMS40MjIuMDItMi4xMjMgMC0uNTUuMDE4LTEuMTE5LjAxOC0xLjY2OCAxLjIzLjMwMyAxLjc0Mi45NDcgMS43NDIgMS44NzYgMCAuOTY3LS41MyAxLjYxMS0xLjc4IDEuOTE1Wk00LjY1IDI3LjUzNWMwLS45MjkuNTExLTEuNTczIDEuNzQyLTEuODc2djMuNzcxYy0xLjIzLS4zMDMtMS43NDItLjk0Ny0xLjc0Mi0xLjg5NVpNNTkuMjUzIDM1LjA5OGMyLjgyIDAgNi41ODgtLjcyIDcuOTktNC4xMTMtMS40MDEtLjYwNy0yLjgwMy0xLjI1MS0zLjk3Ni0xLjg3Ny0uNTg3IDEuNDk4LTEuNzQyIDIuMTgtMy44NjMgMi4xOC0yLjY1IDAtMy43ODYtMS40MjItMy44OC0zLjIwMy0uMDk2LTEuNzYzLjg4OS0zLjU0NSAzLjU5Ni0zLjU0NSAxLjQyIDAgMy4zNTEuNTMxIDQuMTQ3IDIuMDg1IDEuMTkyLS42MDYgMi40OC0xLjIzMiAzLjk5NC0xLjc2Mi0xLjQ5NS0zLjAzMy00LjUwNi00LjExMy04LjAwOC00LjExMy01Ljk2NCAwLTguMzMgMy4wNTEtOC4zMyA3LjMzNSAwIDQuMzQgMi40NDIgNy4wMTMgOC4zMyA3LjAxM1pNODQuNzMxIDI3LjUzNWMwLTIuOTk1LTEuNzgtNS4xNTUtNi4yNDctNS42NjcgMC0uNjA3IDAtMS4xOTQuMDE5LTEuNzQ0aC00LjQ2OWMwIC41NjkuMDIgMS4xNTYuMDIgMS43NDQtNC40MTIuNTMtNi4xOTIgMi42NzItNi4xOTIgNS42NjcgMCAzLjAzMyAxLjgxOCA1LjE1NiA2LjE5MiA1LjY2NyAwIC41ODgtLjAyIDEuMTU3LS4wMiAxLjcwNmg0LjQ2OWMtLjAyLS41My0uMDItMS4xLS4wMzgtMS42ODcgNC40NjgtLjUxMSA2LjI2Ni0yLjYzNCA2LjI2Ni01LjY4NlptLTYuMjY2IDEuOTE1YzAtLjcyIDAtMS40MjIuMDE5LTIuMTIzIDAtLjU1LjAxOS0xLjExOS4wMTktMS42NjggMS4yMy4zMDMgMS43NDIuOTQ3IDEuNzQyIDEuODc2IDAgLjk2Ny0uNTMgMS42MTEtMS43OCAxLjkxNVptLTYuMTE1LTEuOTE1YzAtLjkyOS41MS0xLjU3MyAxLjc0MS0xLjg3NnYzLjc3MWMtMS4yMy0uMzAzLTEuNzQxLS45NDctMS43NDEtMS44OTVaTTk0LjIzNCAzNS4wOThjNi4wNzggMCA4LjQ0NC0yLjgyNCA4LjQ0NC03LjE4NCAwLTQuMjg0LTIuMzY2LTcuMTY1LTguNDQ0LTcuMTY1LTYuMDU4IDAtOC40MjUgMi44ODItOC40MjUgNy4xNjUgMCA0LjM0IDIuNDQzIDcuMTg0IDguNDI1IDcuMTg0Wm0wLTMuODY3Yy0yLjgyIDAtMy45MzgtMS4xMTgtMy45MzgtMy4zMTcgMC0yLjE2IDEuMDk5LTMuMjk4IDMuOTM4LTMuMjk4IDIuODYgMCAzLjk1NyAxLjEzNyAzLjk1NyAzLjI5OCAwIDIuMjE4LTEuMDk4IDMuMzE3LTMuOTU3IDMuMzE3Wk0xMDguNTc3IDIxLjE2NnYtLjAxOGgtNC42NThjLjE5IDQuNTg3LjE5IDkuMTczIDAgMTMuNzZoNC42NTh2LTMuMzM2aDMuOTM4YzUuMzc3IDAgNi43MjEtMi4xOTggNi43MjEtNS4zMDcgMC0yLjkxOS0xLjM0NC01LjA5OS02LjcyMS01LjA5OWgtMy45MzhabTAgNi43NDhWMjQuOTJoMi42MTNjMy4xMjQgMCAzLjc2Ny4yNjYgMy43NjcgMS40NzkgMCAxLjIzMi0uNzE5IDEuNTE2LTMuNzY3IDEuNTE2aC0yLjYxM1pNMTM1LjIxOSAyMS4xNjZsLTEzLjMyNC0uMDE4YzAgMy4xNDYuMDc2IDYuODgtLjE1MSA4LjA5My0uMjg0IDEuNTM1LS44MzQgMi4wODUtMS44OTQgMi4yOTNoLS45NDZ2Ni41NTloNC40ODd2LTIuODA2aDguODc5djIuNzQ5aDQuNDg1di02LjUwMmgtMS41MzZWMjEuMTY3Wm0tOS4wNjQgOS41NTNjLjM5Ny0yLjEwNC4zMjItMy45NjEuMzYtNS44NTZoMy45MTR2Ni42NzFoLTQuNDgyYy4wOTQtLjI2NS4xNTEtLjUzLjIwOC0uODE1WiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMjA3IDMzLjE5NWMxLjM2MyAxLjI1MSAzLjQ5IDEuODc3IDYuMzggMS44NzcgMi45MjggMCA1LjA2OC0uNjI2IDYuNDE4LTEuODc3IDEuMzUxLTEuMjUgMi4wMjYtMy4wMiAyLjAyNi01LjMwNyAwLTIuMjUtLjY4MS00LjAwNi0yLjA0NC01LjI3LTEuMzUxLTEuMjYzLTMuNDg0LTEuODk1LTYuNC0xLjg5NS0yLjkwMyAwLTUuMDM2LjYzMi02LjM5OSAxLjg5Ni0xLjM1IDEuMjYzLTIuMDI2IDMuMDItMi4wMjYgNS4yNjkgMCAyLjI3NC42ODIgNC4wNDMgMi4wNDUgNS4zMDdabTkuNDEtMi43ODZjLS42MTkuNTMtMS42MjkuNzk2LTMuMDMuNzk2LTEuMzg4IDAtMi4zOTItLjI3Mi0zLjAxLS44MTUtLjYxOS0uNTQ0LS45MjgtMS4zNzgtLjkyOC0yLjUwMiAwLTEuMTEyLjMxLTEuOTQuOTI4LTIuNDgzLjYxOC0uNTQzIDEuNjIyLS44MTUgMy4wMS0uODE1IDEuNDAxIDAgMi40MTEuMjcyIDMuMDMuODE1LjYxOC41NDMuOTI3IDEuMzcuOTI3IDIuNDgzIDAgMS4xMzctLjMwOSAxLjk3Ny0uOTI4IDIuNTJabTExLjUzMyA0LjQ3M3YtNS41MTdoLjk5NGMxLjQ5IDEuOTA4IDIuNDMxIDMuMzU3IDMuNzM2IDUuNTUyaDUuODFjLTIuMDQtMi43OC0zLjI4NS00LjQxNi01LjYyOC02Ljk0di0uNjg0bDUuMzgyLTYuMTcyaC01LjcwOGwtLjI3OS40aC0uMDAxdi4wMDJjLS44OTcgMS4yODQtMS45NTkgMi44MDUtMy43MzggNC41NjQtLjI1MyAwLS40NDItLjAwNi0uNTY4LS4wMTl2LTQuOTQ3aC00LjcxNWMuMTAxIDIuNDUyLjE1MiA0Ljc0NS4xNTIgNi44OCAwIDIuMTM2LS4wNSA0LjQzLS4xNTIgNi44ODFoNC43MTVaIi8+PC9nPjxnIGNsaXAtcGF0aD0idXJsKCNiKSI+PHBhdGggZD0ibTc5LjQyNyAzLjU5NCAxMi4zNyA1LjczTDkwLjMwNCAybDIyLjYyMiAxNi4yMjhIODIuNjE4bC0zLjE5LTE0LjYzNFoiIGZpbGw9IiNGOTAiLz48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTEwNS4wMyAxOC4yMjhjLjAwMy0uNDMxLS4wMjItLjg3Ni0uMDc3LTEuMzMtLjQwOS0zLjM1LTIuMzIxLTUuODcyLTQuMjctNS42MzUtMS45NS4yMzgtMy4xOTkgMy4xNDYtMi43OSA2LjQ5NS4wMjQuMTU5LjA1MS4zMTYuMDgxLjQ3aDcuMDU2WiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAxLjIwNSAxOC4yMjhjLjAxNy0uMjc3LjAwOS0uNTctLjAyOC0uODctLjE5LTEuNTYzLTEuMDgtMi43NC0xLjk4Ni0yLjYzLS45MDcuMTEtMS40ODcgMS40NjctMS4yOTYgMy4wMy4wMTYuMTYyLjA0LjMyLjA3LjQ3aDMuMjRaIiBmaWxsPSIjMDAwIi8+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik05Ny42MjkgMTguMjI4YTEwLjcxNSAxMC43MTUgMCAwIDAtLjA0Ny0uNDdjLS40MDktMy4zNS0yLjMyLTUuODcyLTQuMjctNS42MzUtMS44NTIuMjI2LTMuMTQ0IDIuOTYxLTIuOTE5IDYuMTA1aDcuMjM2WiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOTMuNzQyIDE4LjIyOGE0Ljg1MiA0Ljg1MiAwIDAgMC0uMDM1LS42N2MtLjE5LTEuNTYzLTEuMDgtMi43NDEtMS45ODctMi42My0uODc0LjEwNi0xLjUwNyAxLjc4LTEuMzggMy4zaDMuNDAyWiIgZmlsbD0iIzAwMCIvPjxwYXRoIGQ9Im0xMTYuNDgzIDExLjY5LTE2LjY5NiA2LjUzOGgxMy40NTNsMy4yNDMtNi41MzdaIiBmaWxsPSIjRjkwIi8+PHBhdGggZD0ibTExNi40ODIgMTEuNjktNC4xNjEgMS42MzEgMi41NTQgMS42MjIgMS42MDctMy4yNTJaIiBmaWxsPSIjMDAwIi8+PC9nPjxkZWZzPjxjbGlwUGF0aCBpZD0iYSI+PHBhdGggZmlsbD0iI2ZmZiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAxNy44MzgpIiBkPSJNMCAwaDEzN3YyMC4yNDdIMHoiLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iYiI+PHBhdGggZmlsbD0iI2ZmZiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzkuNDI3IDIpIiBkPSJNMCAwaDM3LjAyM3YxNi4xNjVIMHoiLz48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=" alt="Фоксфорд" width="137" height="40"></div>`}
 function shell(content){
   const s=summary(), names={home:'Главная',topics:'Темы',mistakes:'Мои ошибки',stats:'Статистика',workout:'Тренировка'};
-  return `<div class="layout"><aside class="sidebar"><div>${brand()}<div class="brand-note">тренажёр по математике</div></div><nav class="nav" aria-label="Основная навигация">${navItems(s)}</nav><div class="sidebar-bottom"><div class="sidebar-tip">${icon('sparkle',22)}<strong>Маленькие шаги.<br>Большой результат.</strong><p>Даже одно задание в день —<br>это уже движение вперёд.</p></div><div class="sidebar-footer"><span>ЕГЭ · базовый уровень</span><button data-action="info" aria-label="О тренажёре">${icon('info',15)}</button></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb">Тренажёр ${icon('chevron',11)} <b>${names[state.route]}</b></div><div class="mobile-brand">${brand()}</div><div class="top-actions"><span class="mode-label">${state.data.mode==='telegram-local'?'На этом устройстве':'Браузерная версия'}</span><span class="level-pill"><span class="level-dot"></span>Математика · база</span></div></header><div id="view">${content}</div></main><nav class="mobile-nav" aria-label="Навигация">${navItems(s)}</nav></div>`;
+  return `<div class="layout"><aside class="sidebar"><div>${brand()}<div class="brand-note">тренажёр по математике</div></div><nav class="nav" aria-label="Основная навигация">${navItems(s)}</nav><div class="sidebar-bottom"><div class="sidebar-tip">${icon('sparkle',22)}<strong>Маленькие шаги.<br>Большой результат.</strong><p>Даже одно задание в день —<br>это уже движение вперёд.</p></div><div class="sidebar-footer"><span>ЕГЭ · базовый уровень</span><button data-action="info" aria-label="О тренажёре">${icon('info',15)}</button></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb">Тренажёр ${icon('chevron',11)} <b>${names[state.route]}</b></div><div class="mobile-brand">${brand()}</div><div class="top-actions"><span class="mode-label">${state.data.mode==='telegram-local'?'На этом устройстве':'Браузерная версия'}</span><span class="level-pill"><span class="level-dot"></span>Математика · база</span></div></header><div id="view">${content}</div></main><nav class="mobile-nav" aria-label="Навигация"><span class="glass-selection" aria-hidden="true"></span>${navItems(s)}</nav></div>`;
 }
 
 function heading(title,description,extra=''){return `<div class="page-heading"><div><h1>${title}</h1>${description?`<p>${description}</p>`:''}</div>${extra}</div>`}
@@ -304,7 +369,20 @@ function workout(){
   return `<div class="workout"><div class="workout-top"><button class="back-button" data-nav="home">${icon('back',16)}К тренажёру</button><span class="workout-label">${mode}</span></div><article class="question-card"><div class="question-top"><span class="tag">${esc(t.topic)}</span><span class="task-source">ФИПИ · ${esc(t.key)}</span></div><h1>Попробуем разобраться</h1><div class="question-text">${esc(t.question)}</div>${(t.images||[]).map(src=>`<button class="question-image" data-image="${esc(src)}" aria-label="Увеличить рисунок к заданию"><img src="${esc(src)}" alt="Рисунок к заданию по теме ${esc(t.topic)}"><small>Нажми, чтобы увеличить</small></button>`).join('')}${state.result?`<div class="result ${state.result.is_correct?'':'wrong'}" role="status">${icon(state.result.is_correct?'check':'error',22)}<div><strong>${state.result.is_correct?'Всё верно. Отличная работа!':'Пока не получилось — и это нормально.'}</strong><p>${state.result.is_correct?'Результат сохранён. Двигаемся дальше?':'Задание сохранено в «Моих ошибках». Вернись к нему позже и попробуй ещё раз.'}</p></div></div>`:`<form class="answer-area" id="answer-form"><label for="answer">Твой ответ</label><div class="answer-controls"><input class="answer-input" id="answer" name="answer" inputmode="${type==='matching'||type==='multiple_choice'?'numeric':'text'}" maxlength="128" autocomplete="off" placeholder="Введи ответ…" value="${esc(state.drafts[session.token]||'')}" aria-describedby="answer-hint" required><button type="submit" class="button purple" ${state.busy?'disabled':''}>${state.busy?'Проверяем…':'Проверить ответ'} ${icon('arrow',16)}</button></div><p class="answer-hint" id="answer-hint">${hint}</p><p class="input-error" id="input-error" role="alert"></p></form>`}</article><div class="task-bottom"><button class="skip-button" data-action="skip">${icon('shuffle',15)}Другое задание</button>${state.result?'<button class="button purple" data-action="next">Дальше '+icon('arrow',15)+'</button>':''}</div><p class="session-note">${state.result?'В статистике учитывается каждая отправленная попытка.':'Можно вернуться позже: незаконченная тренировка сохранится.'}</p></div>`;
 }
 
-function render(){if(!state.data)return;root.innerHTML=shell(({home,topics,mistakes,stats,workout}[state.route]||home)());try{if(state.route==='workout')tg?.BackButton?.show();else tg?.BackButton?.hide()}catch{}}
+function render(){
+  if(!state.data)return;
+  const content=({home,topics,mistakes,stats,workout}[state.route]||home)();
+  const view=root.querySelector('#view');
+  if(!view)root.innerHTML=shell(content);
+  else{
+    view.innerHTML=content;
+    const names={home:'Главная',topics:'Темы',mistakes:'Мои ошибки',stats:'Статистика',workout:'Тренировка'};
+    const breadcrumb=root.querySelector('.breadcrumb b');if(breadcrumb)breadcrumb.textContent=names[state.route];
+    const sidebar=root.querySelector('.nav');if(sidebar)sidebar.innerHTML=navItems(summary());
+  }
+  syncGlassNavigation();
+  try{if(state.route==='workout')tg?.BackButton?.show();else tg?.BackButton?.hide()}catch{}
+}
 function navigate(route){state.route=route;state.query='';render();window.scrollTo({top:0,behavior:'instant'})}
 
 async function start(mode='random',extra={}){
@@ -347,9 +425,115 @@ function info(){const dialog=document.querySelector('#info-dialog');const mode=s
 
 function exportProgress(){const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),attempts:state.data.attempts},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='foxford-progress-'+dayKey()+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
+const glassRoutes=['home','topics','mistakes','stats'];
+let glassPointer=null,glassWheel=null,glassWheelTimer,glassClickUntil=0;
+const glassRouteIndex=()=>Math.max(0,glassRoutes.indexOf(state.route==='workout'?'topics':state.route));
+const glassClamp=value=>Math.max(0,Math.min(glassRoutes.length-1,value));
+function glassNav(){return root.querySelector('.mobile-nav')}
+function glassButtons(nav){return [...nav.querySelectorAll('button[data-nav]')]}
+function glassGeometry(nav){
+  const buttons=glassButtons(nav),first=buttons[0];
+  if(!first||!first.offsetWidth)return null;
+  return {buttons,left:first.offsetLeft,width:first.offsetWidth,step:buttons[1]?buttons[1].offsetLeft-first.offsetLeft:first.offsetWidth};
+}
+function glassPosition(nav,clientX){
+  const g=glassGeometry(nav);if(!g||!g.step)return glassRouteIndex();
+  return glassClamp((clientX-nav.getBoundingClientRect().left-g.left-g.width/2)/g.step);
+}
+function paintGlass(nav,position,preview=false){
+  const g=glassGeometry(nav);if(!g)return;
+  position=glassClamp(position);
+  nav.style.setProperty('--glass-x',(g.left+position*g.step)+'px');
+  nav.style.setProperty('--glass-width',g.width+'px');
+  g.buttons.forEach((button,index)=>{
+    button.classList.toggle('is-preview',preview&&index===Math.round(position));
+    const distance=Math.min(1,Math.abs(index-position));
+    const influence=(1+Math.cos(Math.PI*distance))/2;
+    button.style.setProperty('--lens-icon-scale',(1+.28*influence).toFixed(4));
+    button.style.setProperty('--lens-label-scale',(1+.12*influence).toFixed(4));
+    button.style.setProperty('--lens-rise',(-1.5*influence).toFixed(3)+'px');
+  });
+}
+function syncGlassNavigation(){
+  const nav=glassNav();if(!nav)return;
+  const index=glassRouteIndex(),count=summary().mistakes.length;
+  glassButtons(nav).forEach((button,i)=>{
+    button.classList.toggle('active',i===index);
+    if(i===index)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    let badge=button.querySelector('.nav-count');
+    if(button.dataset.nav==='mistakes'&&count){
+      if(!badge){badge=document.createElement('span');badge.className='nav-count';button.append(badge)}
+      badge.textContent=String(count);
+    }else badge?.remove();
+  });
+  if(!glassPointer&&!glassWheel)paintGlass(nav,index);
+}
+function stopGlassWheel(commit=false){
+  if(!glassWheel)return;
+  const gesture=glassWheel;glassWheel=null;clearTimeout(glassWheelTimer);
+  gesture.nav.classList.remove('is-dragging','is-pressed');
+  glassButtons(gesture.nav).forEach(button=>button.classList.remove('is-preview'));
+  if(commit)navigate(glassRoutes[Math.round(gesture.position)]);
+  else paintGlass(gesture.nav,glassRouteIndex());
+}
+function finishGlassPointer(event,cancelled=false){
+  if(!glassPointer||event.pointerId!==glassPointer.id)return;
+  const gesture=glassPointer;
+  const position=cancelled?glassRouteIndex():glassPosition(gesture.nav,event.clientX);
+  glassPointer=null;glassClickUntil=Date.now()+500;
+  gesture.nav.classList.remove('is-dragging','is-pressed');
+  glassButtons(gesture.nav).forEach(button=>button.classList.remove('is-preview'));
+  if(gesture.nav.hasPointerCapture?.(gesture.id))gesture.nav.releasePointerCapture(gesture.id);
+  if(cancelled)paintGlass(gesture.nav,glassRouteIndex());
+  else navigate(glassRoutes[Math.round(position)]);
+}
+document.addEventListener('pointerdown',event=>{
+  const nav=event.target.closest?.('.mobile-nav');
+  if(!nav||event.isPrimary===false||event.button!==0||glassPointer)return;
+  stopGlassWheel(false);
+  glassPointer={id:event.pointerId,nav,startX:event.clientX,startY:event.clientY};
+  nav.classList.add('is-pressed');
+  try{nav.setPointerCapture(event.pointerId)}catch{}
+});
+document.addEventListener('pointermove',event=>{
+  if(!glassPointer||event.pointerId!==glassPointer.id)return;
+  const gesture=glassPointer;
+  if(Math.hypot(event.clientX-gesture.startX,event.clientY-gesture.startY)>4){
+    gesture.nav.classList.add('is-dragging');
+    paintGlass(gesture.nav,glassPosition(gesture.nav,event.clientX),true);
+    if(event.cancelable)event.preventDefault();
+  }
+},{passive:false});
+document.addEventListener('pointerup',event=>finishGlassPointer(event));
+document.addEventListener('pointercancel',event=>finishGlassPointer(event,true));
+document.addEventListener('lostpointercapture',event=>finishGlassPointer(event,true),true);
+document.addEventListener('wheel',event=>{
+  const nav=event.target.closest?.('.mobile-nav');
+  if(!nav||glassPointer||event.ctrlKey||Math.abs(event.deltaX)<.5||Math.abs(event.deltaX)<Math.abs(event.deltaY)*.8)return;
+  const geometry=glassGeometry(nav);if(!geometry?.step)return;
+  if(event.cancelable)event.preventDefault();
+  if(!glassWheel)glassWheel={nav,position:glassRouteIndex()};
+  const unit=event.deltaMode===1?16:event.deltaMode===2?nav.clientWidth:1;
+  glassWheel.position=glassClamp(glassWheel.position+event.deltaX*unit/geometry.step);
+  nav.classList.add('is-dragging','is-pressed');
+  paintGlass(nav,glassWheel.position,true);
+  clearTimeout(glassWheelTimer);
+  glassWheelTimer=setTimeout(()=>stopGlassWheel(true),160);
+},{passive:false});
+document.addEventListener('keydown',event=>{
+  const nav=event.target.closest?.('.mobile-nav');if(!nav)return;
+  glassClickUntil=0;
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  const buttons=glassButtons(nav),current=Math.max(0,buttons.indexOf(event.target.closest('button[data-nav]')));
+  const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:glassClamp(current+(event.key==='ArrowRight'?1:-1));
+  event.preventDefault();stopGlassWheel(false);
+  navigate(glassRoutes[next]);buttons[next].focus();
+});
+window.addEventListener('resize',()=>{if(!glassPointer&&!glassWheel)syncGlassNavigation()});
+
 document.addEventListener('click',async event=>{
   const button=event.target.closest('button');if(!button||button.disabled)return;
-  if(button.dataset.nav)return navigate(button.dataset.nav);
+  if(button.dataset.nav){if(button.closest('.mobile-nav')&&Date.now()<glassClickUntil)return;return navigate(button.dataset.nav)}
   if(button.dataset.start)return start(button.dataset.start);
   if(button.dataset.topic)return start('topic',{topic:button.dataset.topic});
   if(button.dataset.retry)return start('mistakes',{key:button.dataset.retry});
