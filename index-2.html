@@ -196,10 +196,25 @@
   .mobile-nav .glass-selection,.mobile-nav .glass-lens-track{transition:none;will-change:auto}
   .mobile-nav.is-pressed .glass-selection{transform:translate3d(var(--glass-x,6px),0,0)}
 }
+
+/* Refraction is applied to the contents of the capsule, in its local coordinates. */
+.mobile-nav .glass-lens-optics{position:absolute;inset:0}
+.mobile-nav.has-refraction .glass-lens-optics{-webkit-filter:url(#glass-edge-refraction);filter:url(#glass-edge-refraction)}
+.mobile-nav .glass-selection::after{
+  background:linear-gradient(130deg,rgba(255,255,255,.4),transparent 24%,transparent 76%,rgba(255,255,255,.22));
+  box-shadow:inset 0 1.5px 1px rgba(255,255,255,.98),inset 0 -1.5px 1px rgba(255,255,255,.9),inset 1px 0 2px rgba(135,205,255,.5),inset -1px 0 2px rgba(255,210,160,.4);
+}
+@media(prefers-reduced-transparency:reduce){.mobile-nav.has-refraction .glass-lens-optics{-webkit-filter:none;filter:none}}
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js?64"></script>
 </head>
 <body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="glass-edge-refraction" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="-24" y="-24" width="180" height="110" color-interpolation-filters="sRGB">
+      <feImage id="glass-edge-map" x="0" y="0" width="100" height="62" preserveAspectRatio="none" result="edge-map"/>
+      <feDisplacementMap id="glass-edge-displace" in="SourceGraphic" in2="edge-map" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+    </filter></defs>
+  </svg>
   <div id="app"><div class="boot"><span class="boot-mark">ƒ</span><p>Открываем тренажёр…</p></div></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <dialog id="info-dialog" aria-label="О тренажёре"></dialog>
@@ -319,7 +334,7 @@ function glassLensItems(s){return [['home','home','Главная'],['topics','b
 function brand(){return `<div class="brand"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTM3IDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIGNsaXAtcGF0aD0idXJsKCNhKSIgZmlsbD0iIzAwMCI+PHBhdGggZD0iTTE3LjAzMiAyNy41MzVjMC0yLjk5NS0xLjc4LTUuMTU1LTYuMjQ4LTUuNjY3IDAtLjYwNyAwLTEuMTk0LjAyLTEuNzQ0SDYuMzM0YzAgLjU2OS4wMiAxLjE1Ni4wMiAxLjc0NC00LjQxMi41My02LjE5MiAyLjY3Mi02LjE5MiA1LjY2NyAwIDMuMDMzIDEuODE4IDUuMTU2IDYuMTkxIDUuNjY3IDAgLjU4OC0uMDE5IDEuMTU3LS4wMTkgMS43MDZoNC40NjhjLS4wMTktLjUzLS4wMTktMS4xLS4wMzgtMS42ODcgNC40NjgtLjUxMSA2LjI2Ny0yLjYzNCA2LjI2Ny01LjY4NlptLTYuMjY3IDEuOTE1YzAtLjcyIDAtMS40MjIuMDItMi4xMjMgMC0uNTUuMDE4LTEuMTE5LjAxOC0xLjY2OCAxLjIzLjMwMyAxLjc0Mi45NDcgMS43NDIgMS44NzYgMCAuOTY3LS41MyAxLjYxMS0xLjc4IDEuOTE1Wk00LjY1IDI3LjUzNWMwLS45MjkuNTExLTEuNTczIDEuNzQyLTEuODc2djMuNzcxYy0xLjIzLS4zMDMtMS43NDItLjk0Ny0xLjc0Mi0xLjg5NVpNNTkuMjUzIDM1LjA5OGMyLjgyIDAgNi41ODgtLjcyIDcuOTktNC4xMTMtMS40MDEtLjYwNy0yLjgwMy0xLjI1MS0zLjk3Ni0xLjg3Ny0uNTg3IDEuNDk4LTEuNzQyIDIuMTgtMy44NjMgMi4xOC0yLjY1IDAtMy43ODYtMS40MjItMy44OC0zLjIwMy0uMDk2LTEuNzYzLjg4OS0zLjU0NSAzLjU5Ni0zLjU0NSAxLjQyIDAgMy4zNTEuNTMxIDQuMTQ3IDIuMDg1IDEuMTkyLS42MDYgMi40OC0xLjIzMiAzLjk5NC0xLjc2Mi0xLjQ5NS0zLjAzMy00LjUwNi00LjExMy04LjAwOC00LjExMy01Ljk2NCAwLTguMzMgMy4wNTEtOC4zMyA3LjMzNSAwIDQuMzQgMi40NDIgNy4wMTMgOC4zMyA3LjAxM1pNODQuNzMxIDI3LjUzNWMwLTIuOTk1LTEuNzgtNS4xNTUtNi4yNDctNS42NjcgMC0uNjA3IDAtMS4xOTQuMDE5LTEuNzQ0aC00LjQ2OWMwIC41NjkuMDIgMS4xNTYuMDIgMS43NDQtNC40MTIuNTMtNi4xOTIgMi42NzItNi4xOTIgNS42NjcgMCAzLjAzMyAxLjgxOCA1LjE1NiA2LjE5MiA1LjY2NyAwIC41ODgtLjAyIDEuMTU3LS4wMiAxLjcwNmg0LjQ2OWMtLjAyLS41My0uMDItMS4xLS4wMzgtMS42ODcgNC40NjgtLjUxMSA2LjI2Ni0yLjYzNCA2LjI2Ni01LjY4NlptLTYuMjY2IDEuOTE1YzAtLjcyIDAtMS40MjIuMDE5LTIuMTIzIDAtLjU1LjAxOS0xLjExOS4wMTktMS42NjggMS4yMy4zMDMgMS43NDIuOTQ3IDEuNzQyIDEuODc2IDAgLjk2Ny0uNTMgMS42MTEtMS43OCAxLjkxNVptLTYuMTE1LTEuOTE1YzAtLjkyOS41MS0xLjU3MyAxLjc0MS0xLjg3NnYzLjc3MWMtMS4yMy0uMzAzLTEuNzQxLS45NDctMS43NDEtMS44OTVaTTk0LjIzNCAzNS4wOThjNi4wNzggMCA4LjQ0NC0yLjgyNCA4LjQ0NC03LjE4NCAwLTQuMjg0LTIuMzY2LTcuMTY1LTguNDQ0LTcuMTY1LTYuMDU4IDAtOC40MjUgMi44ODItOC40MjUgNy4xNjUgMCA0LjM0IDIuNDQzIDcuMTg0IDguNDI1IDcuMTg0Wm0wLTMuODY3Yy0yLjgyIDAtMy45MzgtMS4xMTgtMy45MzgtMy4zMTcgMC0yLjE2IDEuMDk5LTMuMjk4IDMuOTM4LTMuMjk4IDIuODYgMCAzLjk1NyAxLjEzNyAzLjk1NyAzLjI5OCAwIDIuMjE4LTEuMDk4IDMuMzE3LTMuOTU3IDMuMzE3Wk0xMDguNTc3IDIxLjE2NnYtLjAxOGgtNC42NThjLjE5IDQuNTg3LjE5IDkuMTczIDAgMTMuNzZoNC42NTh2LTMuMzM2aDMuOTM4YzUuMzc3IDAgNi43MjEtMi4xOTggNi43MjEtNS4zMDcgMC0yLjkxOS0xLjM0NC01LjA5OS02LjcyMS01LjA5OWgtMy45MzhabTAgNi43NDhWMjQuOTJoMi42MTNjMy4xMjQgMCAzLjc2Ny4yNjYgMy43NjcgMS40NzkgMCAxLjIzMi0uNzE5IDEuNTE2LTMuNzY3IDEuNTE2aC0yLjYxM1pNMTM1LjIxOSAyMS4xNjZsLTEzLjMyNC0uMDE4YzAgMy4xNDYuMDc2IDYuODgtLjE1MSA4LjA5My0uMjg0IDEuNTM1LS44MzQgMi4wODUtMS44OTQgMi4yOTNoLS45NDZ2Ni41NTloNC40ODd2LTIuODA2aDguODc5djIuNzQ5aDQuNDg1di02LjUwMmgtMS41MzZWMjEuMTY3Wm0tOS4wNjQgOS41NTNjLjM5Ny0yLjEwNC4zMjItMy45NjEuMzYtNS44NTZoMy45MTR2Ni42NzFoLTQuNDgyYy4wOTQtLjI2NS4xNTEtLjUzLjIwOC0uODE1WiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMjA3IDMzLjE5NWMxLjM2MyAxLjI1MSAzLjQ5IDEuODc3IDYuMzggMS44NzcgMi45MjggMCA1LjA2OC0uNjI2IDYuNDE4LTEuODc3IDEuMzUxLTEuMjUgMi4wMjYtMy4wMiAyLjAyNi01LjMwNyAwLTIuMjUtLjY4MS00LjAwNi0yLjA0NC01LjI3LTEuMzUxLTEuMjYzLTMuNDg0LTEuODk1LTYuNC0xLjg5NS0yLjkwMyAwLTUuMDM2LjYzMi02LjM5OSAxLjg5Ni0xLjM1IDEuMjYzLTIuMDI2IDMuMDItMi4wMjYgNS4yNjkgMCAyLjI3NC42ODIgNC4wNDMgMi4wNDUgNS4zMDdabTkuNDEtMi43ODZjLS42MTkuNTMtMS42MjkuNzk2LTMuMDMuNzk2LTEuMzg4IDAtMi4zOTItLjI3Mi0zLjAxLS44MTUtLjYxOS0uNTQ0LS45MjgtMS4zNzgtLjkyOC0yLjUwMiAwLTEuMTEyLjMxLTEuOTQuOTI4LTIuNDgzLjYxOC0uNTQzIDEuNjIyLS44MTUgMy4wMS0uODE1IDEuNDAxIDAgMi40MTEuMjcyIDMuMDMuODE1LjYxOC41NDMuOTI3IDEuMzcuOTI3IDIuNDgzIDAgMS4xMzctLjMwOSAxLjk3Ny0uOTI4IDIuNTJabTExLjUzMyA0LjQ3M3YtNS41MTdoLjk5NGMxLjQ5IDEuOTA4IDIuNDMxIDMuMzU3IDMuNzM2IDUuNTUyaDUuODFjLTIuMDQtMi43OC0zLjI4NS00LjQxNi01LjYyOC02Ljk0di0uNjg0bDUuMzgyLTYuMTcyaC01LjcwOGwtLjI3OS40aC0uMDAxdi4wMDJjLS44OTcgMS4yODQtMS45NTkgMi44MDUtMy43MzggNC41NjQtLjI1MyAwLS40NDItLjAwNi0uNTY4LS4wMTl2LTQuOTQ3aC00LjcxNWMuMTAxIDIuNDUyLjE1MiA0Ljc0NS4xNTIgNi44OCAwIDIuMTM2LS4wNSA0LjQzLS4xNTIgNi44ODFoNC43MTVaIi8+PC9nPjxnIGNsaXAtcGF0aD0idXJsKCNiKSI+PHBhdGggZD0ibTc5LjQyNyAzLjU5NCAxMi4zNyA1LjczTDkwLjMwNCAybDIyLjYyMiAxNi4yMjhIODIuNjE4bC0zLjE5LTE0LjYzNFoiIGZpbGw9IiNGOTAiLz48cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTEwNS4wMyAxOC4yMjhjLjAwMy0uNDMxLS4wMjItLjg3Ni0uMDc3LTEuMzMtLjQwOS0zLjM1LTIuMzIxLTUuODcyLTQuMjctNS42MzUtMS45NS4yMzgtMy4xOTkgMy4xNDYtMi43OSA2LjQ5NS4wMjQuMTU5LjA1MS4zMTYuMDgxLjQ3aDcuMDU2WiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTAxLjIwNSAxOC4yMjhjLjAxNy0uMjc3LjAwOS0uNTctLjAyOC0uODctLjE5LTEuNTYzLTEuMDgtMi43NC0xLjk4Ni0yLjYzLS45MDcuMTEtMS40ODcgMS40NjctMS4yOTYgMy4wMy4wMTYuMTYyLjA0LjMyLjA3LjQ3aDMuMjRaIiBmaWxsPSIjMDAwIi8+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik05Ny42MjkgMTguMjI4YTEwLjcxNSAxMC43MTUgMCAwIDAtLjA0Ny0uNDdjLS40MDktMy4zNS0yLjMyLTUuODcyLTQuMjctNS42MzUtMS44NTIuMjI2LTMuMTQ0IDIuOTYxLTIuOTE5IDYuMTA1aDcuMjM2WiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOTMuNzQyIDE4LjIyOGE0Ljg1MiA0Ljg1MiAwIDAgMC0uMDM1LS42N2MtLjE5LTEuNTYzLTEuMDgtMi43NDEtMS45ODctMi42My0uODc0LjEwNi0xLjUwNyAxLjc4LTEuMzggMy4zaDMuNDAyWiIgZmlsbD0iIzAwMCIvPjxwYXRoIGQ9Im0xMTYuNDgzIDExLjY5LTE2LjY5NiA2LjUzOGgxMy40NTNsMy4yNDMtNi41MzdaIiBmaWxsPSIjRjkwIi8+PHBhdGggZD0ibTExNi40ODIgMTEuNjktNC4xNjEgMS42MzEgMi41NTQgMS42MjIgMS42MDctMy4yNTJaIiBmaWxsPSIjMDAwIi8+PC9nPjxkZWZzPjxjbGlwUGF0aCBpZD0iYSI+PHBhdGggZmlsbD0iI2ZmZiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAxNy44MzgpIiBkPSJNMCAwaDEzN3YyMC4yNDdIMHoiLz48L2NsaXBQYXRoPjxjbGlwUGF0aCBpZD0iYiI+PHBhdGggZmlsbD0iI2ZmZiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzkuNDI3IDIpIiBkPSJNMCAwaDM3LjAyM3YxNi4xNjVIMHoiLz48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=" alt="Фоксфорд" width="137" height="40"></div>`}
 function shell(content){
   const s=summary(), names={home:'Главная',topics:'Темы',mistakes:'Мои ошибки',stats:'Статистика',workout:'Тренировка'};
-  return `<div class="layout"><aside class="sidebar"><div>${brand()}<div class="brand-note">тренажёр по математике</div></div><nav class="nav" aria-label="Основная навигация">${navItems(s)}</nav><div class="sidebar-bottom"><div class="sidebar-tip">${icon('sparkle',22)}<strong>Маленькие шаги.<br>Большой результат.</strong><p>Даже одно задание в день —<br>это уже движение вперёд.</p></div><div class="sidebar-footer"><span>ЕГЭ · базовый уровень</span><button data-action="info" aria-label="О тренажёре">${icon('info',15)}</button></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb">Тренажёр ${icon('chevron',11)} <b>${names[state.route]}</b></div><div class="mobile-brand">${brand()}</div><div class="top-actions"><span class="mode-label">${state.data.mode==='telegram-local'?'На этом устройстве':'Браузерная версия'}</span><span class="level-pill"><span class="level-dot"></span>Математика · база</span></div></header><div id="view">${content}</div></main><nav class="mobile-nav" aria-label="Навигация"><span class="glass-selection" aria-hidden="true"><span class="glass-lens-track">${glassLensItems(s)}</span></span>${navItems(s)}</nav></div>`;
+  return `<div class="layout"><aside class="sidebar"><div>${brand()}<div class="brand-note">тренажёр по математике</div></div><nav class="nav" aria-label="Основная навигация">${navItems(s)}</nav><div class="sidebar-bottom"><div class="sidebar-tip">${icon('sparkle',22)}<strong>Маленькие шаги.<br>Большой результат.</strong><p>Даже одно задание в день —<br>это уже движение вперёд.</p></div><div class="sidebar-footer"><span>ЕГЭ · базовый уровень</span><button data-action="info" aria-label="О тренажёре">${icon('info',15)}</button></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb">Тренажёр ${icon('chevron',11)} <b>${names[state.route]}</b></div><div class="mobile-brand">${brand()}</div><div class="top-actions"><span class="mode-label">${state.data.mode==='telegram-local'?'На этом устройстве':'Браузерная версия'}</span><span class="level-pill"><span class="level-dot"></span>Математика · база</span></div></header><div id="view">${content}</div></main><nav class="mobile-nav" aria-label="Навигация"><span class="glass-selection" aria-hidden="true"><span class="glass-lens-optics"><span class="glass-lens-track">${glassLensItems(s)}</span></span></span>${navItems(s)}</nav></div>`;
 }
 
 function heading(title,description,extra=''){return `<div class="page-heading"><div><h1>${title}</h1>${description?`<p>${description}</p>`:''}</div>${extra}</div>`}
@@ -430,8 +445,50 @@ function glassPosition(nav,clientX){
   const g=glassGeometry(nav);if(!g||!g.step)return glassRouteIndex();
   return glassClamp((clientX-nav.getBoundingClientRect().left-g.left-g.width/2)/g.step);
 }
+let glassRefractionSize='';
+function glassEdgeVector(x,y,width,height){
+  const radius=height/2,halfLine=Math.max(0,width/2-radius);
+  const px=x-width/2,py=y-radius;
+  const nearest=Math.max(-halfLine,Math.min(halfLine,px));
+  const dx=px-nearest,dy=py,length=Math.hypot(dx,dy);
+  const depth=radius-length,band=Math.min(18,radius*.62);
+  const edge=Math.pow(Math.max(0,Math.min(1,1-depth/band)),1.65);
+  return length>.001?{x:dx/length*edge,y:dy/length*edge}:{x:0,y:0};
+}
+function prepareGlassRefraction(nav,geometry){
+  const map=document.getElementById?.('glass-edge-map');
+  const filter=document.getElementById?.('glass-edge-refraction');
+  if(!map||!filter)return;
+  const width=geometry.width,height=geometry.buttons[0].offsetHeight||62;
+  const key=width.toFixed(2)+'x'+height.toFixed(2);
+  if(glassRefractionSize===key)return;
+  try{
+    const canvas=document.createElement('canvas'),ratio=2;
+    canvas.width=Math.ceil(width*ratio);canvas.height=Math.ceil(height*ratio);
+    const context=canvas.getContext('2d');if(!context)return;
+    const pixels=context.createImageData(canvas.width,canvas.height);
+    for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
+      const vector=glassEdgeVector((x+.5)/ratio,(y+.5)/ratio,width,height);
+      const i=(y*canvas.width+x)*4;
+      pixels.data[i]=Math.round(127.5+vector.x*105);
+      pixels.data[i+1]=Math.round(127.5+vector.y*105);
+      pixels.data[i+2]=128;pixels.data[i+3]=255;
+    }
+    context.putImageData(pixels,0,0);
+    const url=canvas.toDataURL('image/png');
+    map.setAttribute('href',url);
+    map.setAttributeNS('http://www.w3.org/1999/xlink','href',url);
+    map.setAttribute('width',width);map.setAttribute('height',height);
+    filter.setAttribute('x',-24);filter.setAttribute('y',-24);
+    filter.setAttribute('width',width+48);filter.setAttribute('height',height+48);
+    nav.classList.add('has-refraction');glassRefractionSize=key;
+  }catch{nav.classList.remove('has-refraction')}
+}
+
 function paintGlass(nav,position,preview=false){
   const g=glassGeometry(nav);if(!g)return;
+  prepareGlassRefraction(nav,g);
+  document.getElementById?.('glass-edge-displace')?.setAttribute('scale',preview?'28':nav.classList.contains('is-pressed')?'24':'16');
   position=glassClamp(position);
   const x=g.left+position*g.step,zoom=preview?1.22:nav.classList.contains('is-pressed')?1.1:1;
   nav.style.setProperty('--glass-x',x+'px');
