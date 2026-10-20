@@ -271,6 +271,7 @@
   <div id="app"><div class="boot"><span class="boot-mark">ƒ</span><p>Открываем тренажёр…</p></div></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <dialog id="info-dialog" aria-label="О тренажёре"></dialog>
+  <dialog id="progress-import-dialog" aria-label="Перенос прошлого прогресса"></dialog>
   <dialog id="variant-replace-dialog" aria-label="Начать новый вариант"></dialog>
   <dialog id="image-dialog" aria-label="Рисунок к заданию"><button class="image-close" data-close="image-dialog" aria-label="Закрыть рисунок">×</button><img alt="Увеличенный рисунок к заданию"></dialog>
 <script type="module">
@@ -308,7 +309,7 @@ function previousDay(key, delta=1) {
 }
 
 function summarize(attempts, tasks, date=new Date()) {
-  const rows = [...attempts].sort((a,b)=>a.id-b.id), latest = new Map(), topics = new Map();
+  const rows = [...attempts].sort(progressOrder), latest = new Map(), topics = new Map();
   const today = dayKey(date), days = new Map(); let correct=0, current=0, best=0;
   for (const row of rows) {
     const good = !!row.is_correct; if (good) {correct++;current++;best=Math.max(best,current)} else current=0;
@@ -330,6 +331,126 @@ function summarize(attempts, tasks, date=new Date()) {
 }
 
 const EMBEDDED_BANK=[{"id":1,"topic":"Проценты","question":"Поступивший в продажу в сентябре мобильный телефон стоил 2400 рублей. В октябре он стал стоить 1320 рублей. На сколько процентов снизилась цена телефона?","answer":"45","answer_type":"short","images":[],"fipi_id":"4FF344","key":"4FF344"},{"id":2,"topic":"Уравнения","question":"Найдите корень уравнения: (1/4)^(x − 6) = 1/64.","answer":"9","answer_type":"short","images":[],"fipi_id":"4DB040","key":"4DB040"},{"id":3,"topic":"Планиметрия","question":"Перила лестницы укреплены посередине вертикальным столбом. Найдите высоту l этого столба, если наименьшая высота перил h₁ = 2,1 м, а наибольшая высота h₂ = 3,1 м. Ответ дайте в метрах.","answer":"2.6","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK8AAABrCAMAAAA2NSLlAAAAAXNSR0ICQMB9xQAAAGNQTFRFAAAAAAAAAAA6AABmADqQAGa2OgAAOgA6Ojo6OpDbZgAAZgBmZrb/kDoAkDpmkJDbkNvbkNv/tmYAtmY6tpCQtv+2tv//25A625Bm25CQ2//b2////7Zm/9uQ//+2///b////DN54BwAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAACkUlEQVR42u3a63KCMBAFYLdeWi22FVupFZX3f8qCCEIqsJtEcjINP50RPuMmm5xhMsm8uibB+w+9RD55c60/XrqMrS/eqhD88N7K1gdvc5Lhe9tLArpXXcCgvfR3uQX23u0NsN6OTgbq7ey7kN7uXQKgl3q0eN5eLJx3SIvlHdYieTlaHC9PC+IlrhbCy8cieEVa516h1rFXrHXpJQ2tO68W1plXV+vGq6914TXRju81047sJTLljuntz+vQvNeR9cRb14EX3kbV4nvbcwzdy87rILyCvA7Ae2+xxfXebw2is8+96zHezhubntXKz85retrY8+rkdSJvliWzgy2vXl4n857Xc0v1MLCjseQ9LiIr3sH9lyVvmpdvQs2a0PEydouWvPHsZ71Mm3NO7OXtbW2tD8ttPsDTnbbXOK8TeY+Ll6gYZN16sJDXibwp5cvDabXUm2+SQw71lBOnl5WfxUXlFuV7WtFS6GVp8/uWfx4ZDjyVdyuQRcvY706vO4GXf4CM55k17/F5c2kZ38X6sN2wvYJCOK0ie97LwlCVwueB6RWdzau10oq3deOIV7/CJKHan9j2pnPW+iDNPer9iWVvkk+gaNArT2mq8rVfD9nQ+GplSmnVOsf2agZgdeuk60/mH3QMvVrcfH/S/P6I+a/eo/Lt9X7nkTedfr37NL4JteYbvFf5fvAGb/A+xmvQy9x4H/D/9HjVJBDdqyaB8F4lCYT3KkkgvFdJAuG9ShKIvz60k0B0r5oEonvVJLD3eYxe9mhvnQSyvAbPs+O9JYF+eOsk8GNdTjlw7y0JPL/54L1dwRu8Pnvjcs/TeHNI65wz9vsapm86BW/wBm/wBm/wuveSH1fP+MJewRu8Hnsnv4fEtrB6thvfAAAAAElFTkSuQmCC"],"fipi_id":"496A40","key":"496A40"},{"id":4,"topic":"Планиметрия","question":"В треугольнике ABC угол C равен 90°, AB = 20, AC = 2√19. Найдите cos B.","answer":"0.9","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAACECAMAAAD7u7hYAAAAAXNSR0ICQMB9xQAAAF1QTFRFAAAAAAAAHR0bAAA6AABmADqQAGa2OgAAOgA6OgBmOma2OpDbZgAAZgBmZjqQZma2ZpDbZrb/kDoAkJBmkNv/tmYAtmY6tv//25A62////7Zm/9uQ//+2///b////qCBPSgAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAABmElEQVRo3u3ZW3OCMBQE4Gat2BZ6gUpFLvv/f2ZJ0MrUqQlx0h2nPQ8++U2Sk0Bm2Lu7q4rRdY39bdwYV6tt1Mh9kZFDZcoY3G3K8bc1WQxu7ndu9jEjD9U4a9Ymj1lzX9h+lXHdbm2fW7Pex+DasnHJMdMeqpzReNoot83LcW03qtuYbHnD2ulsGrfVN/VUSTFUGCoMijAowqAIgyIMijAowqAIgyIMijAowqAIgyIMijAowqAIgyIMijAowqAIgyIMijAowqAIgyIMijAowqAIgyIMijAowh6bDvtsMuy1qbDfLsT4Vj9hBByaJBi8RQyKsO9aTIa912Iq7L8WE+GAazENxoK68AIMrj+P2zIMNe7bevc2x93DNozaMKIvTDnDfTF9qfeUC17sUI+7Gf54D8HNwbJ/2Z9wkzcuG7lc3eb4p/711LDu6RCsBA4873b/vJuypMs1VKvtOa5ttJHH4Sa33c4Den2OxwUfIx1PtSb76tGEpza3JuSA1WbKqw5hlw1z1nuXngW02yZGx/b8vwwWY1l9Ap9BU3SgKEC5AAAAAElFTkSuQmCC"],"fipi_id":"47F947","key":"47F947"},{"id":5,"topic":"Практические задачи","question":"Любовь Игнатьевна выбирает гостиницу на трое суток.\n\nНазвание — рейтинг — расстояние — цена за сутки:\n• «Южная» — 9,1 — 3,4 км — 3500 руб.\n• «Уют-плюс» — 8,2 — 2,2 км — 3100 руб.\n• «Центральная» — 8,3 — 1,9 км — 4000 руб.\n• «Вокзальная» — 9,8 — 2,7 км — 3300 руб.\n• «Турист» — 8,5 — 2,3 км — 3600 руб.\n• «Эльдорадо» — 7,6 — 2,1 км — 2800 руб.\n\nНужно выбрать гостиницу не дальше 2,4 км от площади, с ценой не выше 3500 рублей за сутки и наивысшим рейтингом среди подходящих. Сколько рублей стоит проживание в ней в течение трёх суток?","answer":"9300","answer_type":"short","images":[],"fipi_id":"402147","key":"402147"},{"id":6,"topic":"Планиметрия","question":"В треугольнике ABC известно, что AB = BC = 15, AC = 24. Найдите длину медианы BM.","answer":"9","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ0AAABdCAMAAACIEJRQAAAAAXNSR0ICQMB9xQAAAHhQTFRFAAAAAAAAAAA6AABmADqQAGa2OgAAOgA6OgBmOjo6Oma2OpDbZgAAZgBmZjqQZmZmZma2ZpDbZrb/kDoAkDo6kDpmkJBmkNu2kNv/tmYAtmY6tmZmtv+2tv/btv//25A625Bm2/+22////7Zm/9uQ//+2///b////8KTDwQAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAAC90lEQVRo3u2bCXPTMBCF9WgTCja9QiEuYEN86P//Qyw5Ds7hWNpdJSJjzXSaQyt9+7SSncyLUnMjNx1zE6QrYNuHdZR0uk4XWjcrvEZJVy0NV4lFlHTFXW4XOErtmpURLUMSZd3VqdkUcsLJ0pVmt5a430RJl1muIs6VbVYWK1K67jwRPe4E6TJznlRLwdNOjq7sLmOwR16MuyJAm+lmupkuMB1ipmsPvGjpWjTIqidIh+5PUj4xug4KssUnRYfhPzH5ZOh2OJDduyJ0OH4kI58A3RDk9MMr0mHsCa5Pd7CCOPPe5elw/jmuSXcsDiZ7XIwOLi/hOnQnZYFjv9B0cH8VF6cDmzkc3ehqwbN/CDr4v4NL0Z0TAqQoGbrpuzewojl05r53SgJMiO55Z++jHaZTx9TbwbTbJs/ULhgdppMHszLIdHCpagd2hKCDWC8P+RzpXEeEYC9nOufhIJusEhxLPg0lOKNXX4jQ+R0BHp1dBlZy03l3B5fO98bCr/+kfEpuVQNkowSnooScF0AJCiefkBKchxgFbzrqxxRS2PhkSlA4eiA86Bif3qmRI1MqQeFYsXCi431rxAg+NbESFI4bjgk6gDk5ZHNTspMzsztUR3lVXGi6wx7Ka1HC0+1rNKCLpZ0/74IVvX/8LdHpm6bTN0tXcrxp1XLnNG5WYDjJCuv1ql4O6KqPPB9z1tMVDCdZYZ2Zddq5+P7R1SnPnbbzBZaf6PbF3nFbPeT7dO/feHTV09KOXD9nZDP5zpZZP2726Iqk4Lld378bI7lu3n6m1KKrlj1C/by3K6rPW88rtdWPfyzV73VJdn4eOVq3dPWXvLNak1uZNKs2vTLpDKC0yj0sCdVXY9tYVtwfucFqV6QmL+wYXZGYPcuhM4VS3P16yzV9YXV2kq4tut4vTF7YV2Mlf1pr+sIOfvxggbZ03WYtOTbm5qv1uCfDfUc67jo3ej+Esk7h+401+JPHNVefhcmY+zuB9no43ADzPcpMN9P9X3R/AbdmMQQIyEQiAAAAAElFTkSuQmCC"],"fipi_id":"4F7241","key":"4F7241"},{"id":7,"topic":"Формулы","question":"Закон Гука задаётся формулой F = kx, где F — сила в ньютонах, x — удлинение пружины в метрах, k — коэффициент упругости в Н/м. Найдите x, если F = 38 Н и k = 2 Н/м.","answer":"19","answer_type":"short","images":[],"fipi_id":"467141","key":"467141"},{"id":8,"topic":"Проценты","question":"Для приготовления фарша взяли говядину и баранину в отношении 7 : 3 соответственно. Какой процент фарша составляет баранина?","answer":"30","answer_type":"short","images":[],"fipi_id":"4E3141","key":"4E3141"},{"id":9,"topic":"Стереометрия","question":"В основании прямой призмы лежит прямоугольный треугольник: один катет равен 3, а гипотенуза равна 3√5. Найдите объём призмы, если её высота равна 5.","answer":"45","answer_type":"short","images":["data:image/png;base64,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"],"fipi_id":"490442","key":"490442"},{"id":10,"topic":"Планиметрия","question":"В треугольнике ABC угол C равен 90°, AB = 5, AC = √21. Найдите sin A.","answer":"0.4","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAABcCAMAAAB5sDrDAAAAAXNSR0ICQMB9xQAAAIpQTFRFAAAAAAAAHR0bAAA6AABmADpmADqQAGa2OgAAOgA6OgBmOjoAOjpmOmaQOma2OpDbZgAAZjoAZjo6ZjpmZjqQZmZmZma2ZpDbZrb/kDoAkLbbkNv/tmYAtmY6tpBmttvbttv/tv//25A625Bm27Zm27aQ2////7Zm/9uQ/9u2/9vb//+2///b////EsJ1BQAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAAB9UlEQVRo3u3aSXuCMBAGYBNbpa0VuwnUHSugkP//90qCW+tGkpnJQb4D1/eZZAYOTEs4S6vV2CSJmUrv20Xd+aArxDpioQM788LymbKuAzt+WKijd1B3EZVHvpkw38F95wPZav3ERZ+n7ZEofrxO4sAeS7W8bgdnXkS+cGVXE1bI8aa2i7GcsNUb65P3Wlq9UNu9mRDNd6yx0cO5I5uXshu7KtmFvTtsent/zeT2QSa2+bFMav+FKe0Tmcw+IxPZZ2UKm1+Q8e2LMLp9Tca1r8uY9i0Zzea3ZSS7Doxj15QR7NoyuK0hw9pcS4a0NWFAW1+Gsk1kGNtMBrC5qWxtm8O2tpVsZVvKFra1bGpzANnMNob5v2jb9jNlWrfNYdvZdtdsYVs3mLENOFOaNuhMadkgspENJOvbHEzWtQFhTRtW1rGh5fo2vFzT5hhyLRsHrmVzutR5ryGnse/XTkMSspi+MPY4z4IjO3saUdBL73UmxHrAwoOdD9QSBHbUpoOs9HlxsCdfFHa8pUX+mezt2I/VNgBuMm+H5MN9r2X97SYCUdlHfZ5/LNTiCXaLR+3RiT2Wv+N9J3bsyz7Ht8X4xM6GYreBgRy5QlX1V6DsYtqTw7VkAcl4d+ZCbKaBqlvuXnQStWZE0Ohi9S4355o9j8Ymtu80v2gvRLH6jL+dAAAAAElFTkSuQmCC"],"fipi_id":"48DE4D","key":"48DE4D"},{"id":12,"topic":"Комбинаторика","question":"Десять столбов соединены проводами так, что от каждого столба отходит ровно 9 проводов. Сколько всего проводов протянуто между десятью столбами?","answer":"45","answer_type":"short","images":[],"fipi_id":"498C45","key":"498C45"},{"id":13,"topic":"Планиметрия","question":"В треугольнике ABC известно, что AB = BC = 25, AC = 14. Найдите площадь треугольника ABC.","answer":"168","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIUAAACPCAMAAADjn+hoAAAAAXNSR0ICQMB9xQAAAIpQTFRFAAAAAAAAHR0bAAA6AABmADpmADqQAGa2OgAAOgA6OgBmOjoAOjpmOmaQOma2OpDbZgAAZjoAZjo6ZjpmZjqQZmZmZma2ZpDbZrb/kDoAkLbbkNv/tmYAtmY6tpBmttvbttv/tv//25A625Bm27Zm27aQ2////7Zm/9uQ/9u2/9vb//+2///b////EsJ1BQAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAACqElEQVR42u3c63aiMBAA4DB2rW1dsbvdWlfrhVbFQt7/9bbB1QMt90wmQ2R+VQgz3wlJrIcThGARkkP0CtcUgZfE+K/dvoimt1Ie596LVUU4UvUP3q1VRXCzTW6M1b6I55+d8PHq+VbHRTRVg3OytztHDoOFjN9Hw71VxTKpH9i9I/Hcl/YVp3kaay4Xmop4qebp7tGbWBydh9PyPRivpUUFWvSKXmFIARwUgMBwRAEY98QNBaAMUIGB0Ga4oACkRcMBBRT8fYUKKPlEpoCKz1ekgBpHrkQBNY9dgQIaHDWmgIbHHVZAizOOKqDlOQcVoHEWTQGa5x1SAEILRxSA1MYBBSC2aq0A5HYdVoCBlh1VgKG2HVQ062Uwo2i6CIC7iubfUeCqos0/cuCmot3vDMBVtP0ZDGgK0FQAhgK0noDUu7pWX4CGAnD6QmXSUdS5ttboBI1xUetKUTMVtEYg9QWLOaL9OApppkrjjI4oEJ5fV+fohgIDUZ1FUCAq83RBgYWoytQBBR6iIhd/BSaiPJugQpTm467ARpRlZK7AR5TkFISI4qysFWYQhXk5K0whijIzVphDFOQWxIj87GwVZhG5+bkqTCPyKjBVmEfk1BAWEN+rsFTQIL7V4aigQnytxFBBh/hSS1hCZKuxU9AiMvXSCuooXC8sRa9grTi8UJaOVw+e92MTzrKK8G5BiHgb/VxLeZyqra0pRTRNNoUTxXnbd3i/zShe/xAqLnuMo6d9WhH4geZO7AYRXnZ9R8/p0RlO/u/Hpu2K7ByJfm+TbfpE02M+WOQplmoDsm9ZEfhqjpAp5DJPET7L8950mri8qUKtWSdFvBqrKfrmzSiXi+FGyo/V7NwXalf6cJ+8vIFuksjdL/Uik3V2dNqNXpFScGDweJcTk/gH1Kh84qyQtDUAAAAASUVORK5CYII="],"fipi_id":"43F64A","key":"43F64A"},{"id":14,"topic":"Стереометрия","question":"В основании прямой призмы лежит прямоугольный треугольник: один катет равен 6, а гипотенуза равна √85. Найдите объём призмы, если её высота равна 3.","answer":"63","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAAB+CAAAAADuY8eWAAAABGdBTUEAALGOfPtRkwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUATWljcm9zb2Z0IE9mZmljZX/tNXEAAAOPSURBVHja7dwtrJtQGAbgIya6ZKKZqtlNM9Vsy1K1IG42zBLUglvnMDdrZoYbDolELUgyhaxZgiRTSCQSiUQiv/HXQlv+ew5UfJ+67W2bp7wU6M15L4H7mdhR33wkd4IJLZlb8N9ffb0HkGfs1qud7oLH/5ZmBiUpCYvt3grSGwEXmnOC8pRUOy5uB3wAs4E8vUipnNQzCyhJiV9s5TylciLeg+lBgSVvk5Sc+Oo3uWdSUJrSeqd79ZuNy++fCNSQUuUBog1TgQJr35BSjYc1yNV3q/XO8LoeJx6AOSi2k5Q42Qp7PFYygS0oS0loT6newwDUN6VyFA0YgaIBKZWjqsACFJj77bJ/Sk0eOiBXF1draUhKVQBQBaUpEU4+hCOff+m5CXRM6Yb3Y+2AEsjVxqdUji3GFECRrSQpKaNTavUMBfnmfrMUNAdojMvHcAsoTWkjGT5QGo+PYCyIXkpdnh4g35TopVT5iHIhDAc5mrjcSKYP1Ce7oB8Eig5JSrxyiIDFNHrqQVlKIvWUKu82v6DvBWKXUi/PGShkmlI5xy8YrSDfkDYrlilVPKcL+iaQ/vThxcOXX3+cSeZfqycFic8f3j/yk83LH9ABurhkYz3VK3oEIQhBCEIQghCEIAQhCEEIQhCCEIQgBCEIQQhCEIIQhCAEIQhBCEIQghCEoOaJ7c9v7wnkLT69tu8B5GhivoQ54nyYHRQKZMGr2QqqbKXT7KDY8oqf8pVXM4HSXsUFrVjpNAvIJtdL9o8rr6YFecUW8q4/8ceVV5OBsrXgC6/pY3+6fzKQss7aWw2g8m7mINfqPA4B7A2YBOQrPCFC3AmqGpiClPOOXRPojMAC5Opa13GoOroMLEF6khKvDwBdVCnog65SagddVjvogNLyVr/XuQQdRKAPijmyFLRgDOi6SkFlC51O2ENBNdWO0aCsCKkPftoZyOOuqx1jQS4Zt/66CqqtUgwGecWLjCx5VED11Y4hoKxiR+ybdrcS1FDtGAIyKaySP4GaqhR9QI4eAYX5+4xU5l3DYaIL5KvpCZsGKN9lii3UXKXoAmm0ugxFRDmopdpRD0oOMjJQnWgblPtQW7WjDqSnpwKDrue4SVJQa7WjFmTQruKUhATUXjUpQY4qUI6pnLIunoCE1iNZAYr4JCWVVUepcniWzI6/EBH1p5FeIrkMC1PVvUJ6bPcA+UamnX2H/l7+d8xp/gMp0ILiWLMpYwAAAABJRU5ErkJggg=="],"fipi_id":"4B9A4C","key":"4B9A4C"},{"id":15,"topic":"Планиметрия","question":"В треугольнике ABC угол C равен 90°, CH — высота, BC = 16, sin A = 0,25. Найдите длину отрезка BH.","answer":"4","answer_type":"short","images":["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ4AAABxAgMAAABZ+fK/AAAAAXNSR0ICQMB9xQAAAAlQTFRFAAAAAAAA////g93P0gAAAAF0Uk5TAEDm2GYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZdEVYdFNvZnR3YXJlAE1pY3Jvc29mdCBPZmZpY2V/7TVxAAABn0lEQVRYw+XXUW7DIAwG4F2SSeMIvs948NNesGSfciRtCRBMfmmTqm5UVVvlU8HYpunbGzoMG18vDnMkDMaMQS0PCMqvQ0ajfiJMJRwI5u47V5kJ9IfqES9cFH6A26MKwqRgZkixXGcDIZdFIrBEooa0qxgI4wb5Gur+lGuYUEjjmeLAfJ+eriCD8FYO2vb2HMojcrmAEYRaX3QN0+FpCQmEuVkBryA3UBaw9tQVlL6CfBi7XSIXqoEw9ZBdSD0UD2YDIQ9QHdgeTNouZYRiIIwnyFOo5w8yhQmFdIY6g3m2DppAnkE+QyUQyrSO5Ayj17UDVANhckqYRkgO5AFmAyF7UHqo5EHtoRgIowv3KCtU8yG3MKGQFlAamG0BtYGnTbTPECbwvInbD3ub3DsUW0KukEE4mbmD8oCTmTuoDxhBOElfD0vYO0yXkG8wXI74f26GfwBpeklDfq9v4wZ1Dks66gWWDYoDqSlIFNIOGYC8QXLg0Yblz1KB6kXd3obsMABwm1oMhIxCcqAc3S7bGnOsmRoOHwrHOfTcMnuB8Q3o+AnhZPCJdwAAAABJRU5ErkJggg=="],"fipi_id":"47BD49","key":"47BD49"},{"id":16,"topic":"Функции","question":"Установите соответствие между функциями и характеристиками.\n\nФУНКЦИИ:\nА) y = 2x − 3\nБ) y = x² − x + 2\nВ) y = 4x − x²\nГ) y = 5 − 3x\n\nХАРАКТЕРИСТИКИ:\n1) функция возрастающая\n2) функция убывающая\n3) функция имеет точку минимума\n4) функция имеет точку максимума\n\nЗапишите четыре цифры в порядке АБВГ.","answer":"1342","answer_type":"matching","images":[],"fipi_id":"493C49","key":"493C49"},{"id":17,"topic":"Планиметрия","question":"В параллелограмме ABCD диагонали делят его углы пополам и равны 10 и 24. Найдите периметр параллелограмма.","answer":"52","answer_type":"short","images":[],"fipi_id":"43D94E","key":"43D94E"},{"id":18,"topic":"Практические задачи","question":"В летнем лагере 249 детей и 28 воспитателей. В одном автобусе можно перевозить не более 45 пассажиров. Какое наименьшее число автобусов понадобится, чтобы перевезти всех за один раз?","answer":"7","answer_type":"short","images":[],"fipi_id":"4C1346","key":"4C1346"},{"id":19,"topic":"Логика","question":"В Москве было 3 °C. В Архангельске — на 4 °C холоднее, а в Махачкале — на 3 °C теплее, чем в Москве. Выберите все верные утверждения.\n\n1) В Москве было теплее, чем в Махачкале.\n2) В любом другом городе, где было теплее, чем в Архангельске, также было теплее, чем в Москве.\n3) В любом другом городе, где было теплее, чем в Махачкале, также было теплее, чем в Москве.\n4) В Махачкале было теплее, чем в Архангельске.\n\nЗапишите номера выбранных утверждений без пробелов.","answer":"34","answer_type":"multiple_choice","images":[],"fipi_id":"494843","key":"494843"},{"id":20,"topic":"Вероятность","question":"Вася, Петя, Коля и Лёша бросили жребий — кому начинать игру. Найдите вероятность того, что начинать игру будет Коля.","answer":"0.25","answer_type":"short","images":[],"fipi_id":"4FF948","key":"4FF948"}];
+
+// Telegram CloudStorage is scoped by Telegram to the current bot and account.
+// Each installation publishes independently, so two devices cannot overwrite each other's answers.
+const progressFields=['active','customCounts','customVariant','lastVariant'];
+const cloneProgress=value=>JSON.parse(JSON.stringify(value));
+function progressHash(text){
+  let a=2166136261,b=2246822507;
+  for(let i=0;i<text.length;i++){a=Math.imul(a^text.charCodeAt(i),16777619);b=Math.imul(b^text.charCodeAt(i),3266489909)}
+  return (a>>>0).toString(16).padStart(8,'0')+(b>>>0).toString(16).padStart(8,'0');
+}
+function progressParts(text){
+  const parts=[];let part='',bytes=0;
+  for(const ch of text){const size=new TextEncoder().encode(ch).length;if(bytes+size>3500){parts.push(part);part='';bytes=0}part+=ch;bytes+=size}
+  if(part)parts.push(part);return parts;
+}
+function progressShape(value={}){
+  const session=saved=>saved?{...saved,task:saved.task?{key:saved.task.key}:null}:null;
+  return {active:session(value.active),customCounts:value.customCounts&&typeof value.customCounts==='object'?value.customCounts:{},customVariant:session(value.customVariant),lastVariant:value.lastVariant||null};
+}
+function progressHasData(value){return !!(value&&(value.attempts?.length||value.active||value.customVariant||value.lastVariant||Object.values(value.customCounts||{}).some(Number)))}
+function progressOrder(a,b){return String(a.created_at).localeCompare(String(b.created_at))||String(a.id).localeCompare(String(b.id),undefined,{numeric:true})}
+function mergeProgressVariants(local,remote){
+  const result=cloneProgress(local),a=result.customVariant?.variant,b=remote.customVariant?.variant;
+  if(a&&b&&a.id===b.id){a.answers={...b.answers,...a.answers};a.drafts={...b.drafts,...a.drafts};for(const key of Object.keys(a.answers))delete a.drafts[key]}
+  const completed=[result.lastVariant,remote.lastVariant].filter(Boolean).sort((a,b)=>String(b.completed_at||'').localeCompare(String(a.completed_at||'')))[0];
+  if(completed){result.lastVariant=completed;if(result.customVariant?.variant.id===completed.id)result.customVariant=null}
+  return result;
+}
+class TelegramProgressStore{
+  constructor({storage,key,cloud=null,onStatus=()=>{}}){
+    this.storage=storage;this.key=key;this.cloud=cloud;this.onStatus=onStatus;this.prefix='ffp2-';this.pending=false;this.ready=false;this.running=null;this.revision=0;
+    const cached=this.readCache();this.writer=/^[a-f0-9]{32}$/.test(cached.sync?.writer||'')?cached.sync.writer:crypto.randomUUID().replaceAll('-','');
+    this.clock=Number(cached.sync?.clock)||0;this.progressClock=this.clock;this.progressWriter=cached.sync?.progressWriter||this.writer;
+    this.progress=progressShape(cached);this.attempts=new Map();this.addAttempts(cached.attempts||[],this.writer);this.legacyDecision=cached.sync?.legacyDecision||'';this.pending=!!cached.sync?.pending;this.cache();
+  }
+  readCache(){try{return JSON.parse(this.storage.getItem(this.key)||'{}')||{}}catch{return {}}}
+  addAttempts(rows,owner){
+    for(const row of rows){
+      if(!row||row.task_id==null||!row.created_at)continue;
+      const id=String(row.sync_id||row.id&&typeof row.id==='string'&&row.id||'legacy-'+progressHash(JSON.stringify([row.task_id,row.user_answer,Number(!!row.is_correct),row.created_at])));
+      if(!this.attempts.has(id))this.attempts.set(id,{...row,id,sync_id:id,sync_device:row.sync_device||owner});
+    }
+  }
+  snapshot(){return {...cloneProgress(this.progress),attempts:[...this.attempts.values()].sort(progressOrder),sync:{writer:this.writer,clock:this.progressClock,progressWriter:this.progressWriter,legacyDecision:this.legacyDecision,pending:this.pending}}}
+  cache(){const snapshot=this.snapshot();try{this.storage.setItem(this.key,JSON.stringify(snapshot));this.cacheError=null}catch(error){this.cacheError=error}return snapshot}
+  save(value){
+    const cached=this.readCache();this.addAttempts(cached.attempts||[],this.writer);this.clock=Math.max(this.clock,Number(cached.sync?.clock)||0);
+    this.addAttempts(value.attempts||[],this.writer);this.progress=mergeProgressVariants(mergeProgressVariants(progressShape(value),this.progress),progressShape(cached));
+    this.clock=Math.max(Date.now(),this.clock)+1;this.progressClock=this.clock;this.progressWriter=this.writer;this.revision++;this.pending=true;
+    const snapshot=this.cache();this.status(this.cloud?'pending':'local');return snapshot;
+  }
+  status(value){this.statusValue=value;this.onStatus(value)}
+  call(method,...args){
+    return new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error('Telegram не ответил. Прогресс остаётся на этом устройстве.')),10000);
+      try{this.cloud[method](...args,(error,value)=>{clearTimeout(timer);if(error)reject(new Error(String(error)));else if(['setItem','removeItems'].includes(method)&&value===false)reject(new Error('Telegram не сохранил данные.'));else resolve(value)})}catch(error){clearTimeout(timer);reject(error)}
+    });
+  }
+  async items(keys){
+    const values={};for(let i=0;i<keys.length;i+=40)Object.assign(values,await this.call('getItems',keys.slice(i,i+40)));return values;
+  }
+  async readCloud(){
+    // A manifest is committed only after all its chunks. Two slots preserve the previous committed snapshot on failure.
+    for(let retry=0;retry<3;retry++){
+      const keys=await this.call('getKeys'),manifests=await this.items(keys.filter(key=>/^ffp2-[a-f0-9]{32}-meta$/.test(key)));
+      const records=[];let changed=false;
+      for(const [key,value] of Object.entries(manifests)){
+        const meta=JSON.parse(value||'null');
+        if(!meta||meta.v!==1||!['a','b'].includes(meta.slot)||!Number.isInteger(meta.count)||meta.count<1||meta.count>1023||key!==this.prefix+meta.writer+'-meta')throw new Error('Не удалось прочитать облачный прогресс. Локальная копия сохранена.');
+        const chunkKeys=Array.from({length:meta.count},(_,i)=>this.prefix+meta.writer+'-'+meta.slot+'-'+i),values=await this.items(chunkKeys);
+        const text=chunkKeys.map((key,i)=>{const prefix=meta.rev+':'+i+':',chunk=values[key];if(typeof chunk!=='string'||!chunk.startsWith(prefix)){changed=true;return ''}return chunk.slice(prefix.length)}).join('');
+        if(changed||progressHash(text)!==meta.hash){changed=true;break}
+        const data=JSON.parse(text);if(data.v!==1||!Array.isArray(data.attempts)||!data.progress)throw new Error('Неизвестный формат облачного прогресса.');
+        records.push({meta,data});
+      }
+      if(!changed)return {keys,records};
+    }
+    throw new Error('Прогресс обновляется в другом окне. Повтори синхронизацию.');
+  }
+  merge(records){
+    for(const {meta,data} of records){
+      this.addAttempts(data.attempts,meta.writer);const clock=Number(data.clock)||0;this.clock=Math.max(this.clock,clock);
+      if(clock>this.progressClock||clock===this.progressClock&&String(data.progressWriter||meta.writer)>this.progressWriter){
+        this.progress=mergeProgressVariants(progressShape(data.progress),this.progress);this.progressClock=clock;this.progressWriter=data.progressWriter||meta.writer;
+      }else this.progress=mergeProgressVariants(this.progress,progressShape(data.progress));
+    }
+    this.cache();
+  }
+  async load(){
+    if(!this.cloud){this.status('local');return this.snapshot()}
+    this.status('loading');try{const {records}=await this.readCloud();this.merge(records);this.ready=true;this.status('saved')}catch(error){this.status('error');this.error=error}
+    return this.snapshot();
+  }
+  async flush(){
+    if(!this.cloud)return this.snapshot();if(this.running)return this.running;
+    const work=async()=>{
+      this.status('saving');
+      try{
+        // Web Locks serialize tabs sharing an installation. Different installations have independent manifests.
+        const revision=this.revision,cache=this.readCache();this.addAttempts(cache.attempts||[],this.writer);this.pending=this.pending||!!cache.sync?.pending;
+        if((Number(cache.sync?.clock)||0)>this.progressClock){this.progress=mergeProgressVariants(progressShape(cache),this.progress);this.progressClock=cache.sync.clock;this.progressWriter=cache.sync.progressWriter||this.writer;this.clock=Math.max(this.clock,this.progressClock)}
+        const {keys,records}=await this.readCloud();this.merge(records);this.ready=true;
+        if(this.pending){
+          const own=records.find(row=>row.meta.writer===this.writer)?.meta,slot=own?.slot==='a'?'b':'a',rev=crypto.randomUUID().replaceAll('-','');
+          const knownWriters=new Set(records.map(row=>row.meta.writer));
+          const payload=JSON.stringify({v:1,attempts:[...this.attempts.values()].filter(row=>row.sync_device===this.writer||!knownWriters.has(row.sync_device)),progress:this.progress,clock:this.progressClock,progressWriter:this.progressWriter});
+          const chunks=progressParts(payload),chunkKeys=chunks.map((_,i)=>this.prefix+this.writer+'-'+slot+'-'+i),metaKey=this.prefix+this.writer+'-meta';
+          if(new Set([...keys,...chunkKeys,metaKey]).size>1024)throw new Error('Облачное хранилище заполнено. Новые результаты сохранены на этом устройстве; скачай историю в разделе «О тренажёре».');
+          for(let i=0;i<chunks.length;i+=4)await Promise.all(chunks.slice(i,i+4).map((text,j)=>this.call('setItem',chunkKeys[i+j],rev+':'+(i+j)+':'+text)));
+          await this.call('setItem',metaKey,JSON.stringify({v:1,writer:this.writer,slot,rev,count:chunks.length,hash:progressHash(payload)}));
+          const obsolete=keys.filter(key=>key.startsWith(this.prefix+this.writer+'-'+slot+'-')&&!chunkKeys.includes(key));
+          if(obsolete.length)try{await this.call('removeItems',obsolete)}catch{}
+          if(revision===this.revision)this.pending=false;
+        }
+        this.cache();this.lastSaved=Date.now();this.error=null;this.status(this.pending?'pending':'saved');return this.snapshot();
+      }catch(error){this.error=error;this.status('error');throw error}
+    };
+    this.running=(globalThis.navigator?.locks?globalThis.navigator.locks.request(this.key,work):work()).finally(()=>{this.running=null});return this.running;
+  }
+}
 
 const root=document.querySelector('#app'), tg=window.Telegram?.WebApp;
 const storageKey='foxford-miniapp-v1';
@@ -363,8 +484,68 @@ const topicOrder=['Проценты','Уравнения','Планиметри�
 const sortedTopics=()=>uniqueTopics().sort((a,b)=>topicOrder.indexOf(a)-topicOrder.indexOf(b));
 
 function toast(message){const node=document.querySelector('#toast');node.textContent=message;node.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove('visible'),4200)}
-function localRead(){try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');return {attempts:Array.isArray(saved.attempts)?saved.attempts:[],active:saved.active||null,customCounts:saved.customCounts&&typeof saved.customCounts==='object'?saved.customCounts:{},customVariant:saved.customVariant||null,lastVariant:saved.lastVariant||null}}catch{return {attempts:[],active:null,customCounts:{},customVariant:null,lastVariant:null}}}
-function localSave(){try{localStorage.setItem(storageKey,JSON.stringify({attempts:state.data.attempts,active:state.data.active,customCounts:state.data.customCounts,customVariant:state.data.customVariant,lastVariant:state.data.lastVariant}))}catch{toast('Не удалось сохранить прогресс в браузере. Не закрывай страницу до конца тренировки.')}}
+let progressStore,cloudSyncTimer,cloudRetry=0,legacyProgress=null;
+function cloudStatusText(){
+  if(!progressStore?.cloud)return telegramAccountId()?'Результаты сохраняются только на этом устройстве. Для облачного сохранения обнови Telegram и открой тренажёр из меню бота.':'Прогресс сохраняется в этом браузере. Чтобы использовать облачное сохранение, открой тренажёр из меню бота в Telegram.';
+  const messages={loading:'Загружаем прогресс твоего аккаунта из Telegram…',pending:'Новые изменения сохранены на устройстве и ожидают отправки в Telegram.',saving:'Сохраняем изменения в твой аккаунт Telegram…',saved:'Облачное сохранение Telegram подключено. История загружается при открытии тренажёра на другом устройстве с тем же аккаунтом.',error:'Сейчас не удалось синхронизироваться с Telegram. Локальная копия сохранена; повторим отправку при восстановлении связи.'};
+  return messages[progressStore.statusValue]||messages.pending;
+}
+function telegramAccountId(){const id=tg?.initDataUnsafe?.user?.id;return tg?.initData&&Number.isSafeInteger(id)&&id>0?String(id):''}
+function updateCloudStatus(){
+  const label=document.querySelector('[data-cloud-status]');if(label)label.textContent=cloudStatusText();
+  try{if(progressStore?.cloud&&progressStore.pending)tg.enableClosingConfirmation?.();else tg?.disableClosingConfirmation?.()}catch{}
+}
+function localRead(){
+  const account=telegramAccountId(),cloud=account&&tg?.CloudStorage&&tg.isVersionAtLeast?.('6.9')?tg.CloudStorage:null;
+  progressStore=new TelegramProgressStore({storage:localStorage,key:account?storageKey+'-tg-'+account:storageKey,cloud,onStatus:updateCloudStatus});
+  if(account&&!progressStore.legacyDecision){
+    try{const owner=localStorage.getItem(storageKey+'-legacy-account'),legacy=JSON.parse(localStorage.getItem(storageKey)||'null');if((!owner||owner===account)&&progressHasData(legacy))legacyProgress=legacy}catch{}
+  }
+  return progressStore.snapshot();
+}
+function localSave(){
+  try{const saved=progressStore.save(state.data);state.data.attempts=saved.attempts;if(progressStore.cloud)scheduleCloudSync();if(progressStore.cacheError)toast('Резервная копия на устройстве недоступна. Не закрывай тренажёр, пока результаты отправляются в Telegram.')}catch{toast('Не удалось сохранить резервную копию в браузере. Не закрывай тренажёр; скачай свою историю.');if(progressStore?.cloud)scheduleCloudSync()}
+}
+function scheduleCloudSync(delay=250){
+  if(!progressStore?.cloud)return;clearTimeout(cloudSyncTimer);cloudSyncTimer=setTimeout(syncProgress,delay);
+}
+async function syncProgress(manual=false){
+  clearTimeout(cloudSyncTimer);if(!progressStore?.cloud||!state.data)return;
+  try{
+    const saved=await progressStore.flush();cloudRetry=0;state.data.attempts=saved.attempts;
+    const current=state.data.customVariant,remote=saved.customVariant;
+    if(current&&remote&&current.variant.id===remote.variant.id){
+      Object.assign(current.variant,mergeProgressVariants({customVariant:current},{customVariant:remote}).customVariant?.variant||current.variant);
+      if(state.session?.mode==='custom'&&state.session.variant.id===current.variant.id){state.session.variant=current.variant;const answer=current.variant.answers[state.session.task.key];if(answer)state.result={is_correct:!!answer.is_correct}}
+    }
+    if(!state.busy&&!['workout','builder'].includes(state.route))render();
+    if(manual)toast(progressStore.pending?'Отправляем новые изменения…':'Прогресс синхронизирован с Telegram.');
+    if(progressStore.pending)scheduleCloudSync();
+  }catch(error){
+    if(manual||cloudRetry===0)toast(error.message||'Не удалось синхронизироваться. Результаты сохранены на устройстве.');
+    cloudRetry++;if(cloudRetry<=3&&!document.hidden)scheduleCloudSync(Math.min(60000,5000*2**cloudRetry));
+  }
+}
+function offerLegacyImport(){
+  if(!legacyProgress)return;const dialog=document.querySelector('#progress-import-dialog'),name=tg?.initDataUnsafe?.user?.first_name;
+  dialog.innerHTML=`<div class="dialog-heading"><h2>Перенести прошлый прогресс?</h2><button class="dialog-close" data-action="progress-skip" aria-label="Не переносить">×</button></div><p>На этом устройстве есть результаты, сохранённые до привязки к Telegram. Добавить их в аккаунт ${name?esc(name)+' ':''}(ID ${esc(telegramAccountId())})? Если здесь занимался другой человек, выбери «Не переносить».</p><div class="variant-replace-actions"><button class="button outline" data-action="progress-skip">Не переносить</button><button class="button purple" data-action="progress-import">Перенести</button></div>`;dialog.showModal();
+}
+function importLegacyProgress(){
+  if(!legacyProgress)return;const previous=progressStore.snapshot(),old=legacyProgress;
+  progressStore.legacyDecision='imported';progressStore.addAttempts(old.attempts||[],progressStore.writer);
+  const merged={...previous,attempts:progressStore.snapshot().attempts};
+  for(const key of progressFields)if(!merged[key]||key==='customCounts'&&!Object.values(merged[key]).some(Number))merged[key]=old[key]||merged[key];
+  progressStore.save(merged);Object.assign(state.data,progressStore.snapshot());
+  if(state.data.active){const task=state.data.tasks.find(t=>t.key===state.data.active.task?.key);state.data.active=task?{...state.data.active,task}:null}
+  state.data.customVariant=restoreCustomVariant(state.data.customVariant);
+  try{localStorage.setItem(storageKey+'-legacy-account',telegramAccountId())}catch{}
+  legacyProgress=null;document.querySelector('#progress-import-dialog').close();render();
+  if(progressStore.cloud)scheduleCloudSync(0);else toast('Прошлый прогресс перенесён в локальную копию этого аккаунта.');
+}
+function skipLegacyProgress(){progressStore.legacyDecision='skipped';try{progressStore.cache()}catch{}legacyProgress=null;document.querySelector('#progress-import-dialog').close()}
+window.addEventListener('online',()=>scheduleCloudSync(0));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleCloudSync(0);else if(progressStore?.pending)syncProgress()});
+
 async function api(path,body){
   const headers={'Content-Type':'application/json'};if(tg?.initData)headers.Authorization='tma '+tg.initData;
   const response=await fetch('/api/'+path,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,credentials:'same-origin'});
@@ -376,11 +557,11 @@ async function boot(){
   try{
     const telegramLocal=Boolean(tg?.initData||(tg?.platform&&tg.platform!=='unknown'));
     if(tg){try{tg.ready();tg.expand();tg.setHeaderColor('#ffffff');tg.setBackgroundColor('#ffffff');if(tg.isVersionAtLeast?.('7.0'))tg.setBottomBarColor?.('#ffffff')}catch{}}
-    state.bank=EMBEDDED_BANK;const stored=localRead();
-    state.data={user:{first_name:''},tasks:state.bank.map(({answer,...task})=>task),...stored,mode:telegramLocal?'telegram-local':'browser'};
+    state.bank=EMBEDDED_BANK;let stored=localRead();if(progressStore.cloud)stored=await progressStore.load();
+    state.data={user:{first_name:telegramAccountId()?tg.initDataUnsafe.user.first_name||'':''},tasks:state.bank.map(({answer,...task})=>task),...stored,mode:progressStore.cloud?'telegram-cloud':telegramLocal?'telegram-local':'browser'};
     if(state.data.active){const task=state.data.tasks.find(t=>t.key===state.data.active.task?.key);state.data.active=task?{...state.data.active,task}:null;}
     state.data.customVariant=restoreCustomVariant(state.data.customVariant);
-    render();
+    render();if(progressStore.cloud&&(progressStore.pending||progressStore.error))scheduleCloudSync(progressStore.pending?0:10000);if(progressStore.error)toast(cloudStatusText());offerLegacyImport();
   }catch(error){root.innerHTML=`<div class="boot"><span class="boot-mark">ƒ</span><h2>Не удалось открыть тренажёр</h2><p style="max-width:360px;text-align:center;padding:0 20px;line-height:1.8">${esc(error.message)}</p><button class="button purple" data-action="reload">Попробовать ещё раз</button></div>`}
 }
 
@@ -556,7 +737,7 @@ async function submit(form){
     else{
       const task=state.bank.find(t=>t.key===state.session.task.key),value=normalizeAnswer(answer,task.answer_type);
       const correct=value===normalizeAnswer(task.answer,task.answer_type);
-      result={is_correct:correct,attempt:{id:(state.data.attempts.at(-1)?.id||0)+1,task_id:task.key,topic:task.topic,user_answer:value,is_correct:Number(correct),created_at:new Date().toISOString()}};
+      result={is_correct:correct,attempt:{id:crypto.randomUUID(),task_id:task.key,topic:task.topic,user_answer:value,is_correct:Number(correct),created_at:new Date().toISOString()}};
     }
     if(!state.data.attempts.some(row=>row.id===result.attempt.id))state.data.attempts.push(result.attempt);
     if(state.session.mode==='custom'){
@@ -568,7 +749,7 @@ async function submit(form){
   }catch(error){state.busy=false;render();const message=document.querySelector('#input-error');if(message)message.textContent=error.message;else toast(error.message)}finally{state.busy=false}
 }
 
-function info(){const dialog=document.querySelector('#info-dialog');const mode=state.data.mode==='telegram-local'?'Тренажёр открыт внутри Telegram. Результаты сохраняются локально на этом устройстве. Синхронизация с историей бота и другими устройствами пока не подключена.':'Это браузерная версия. Прогресс сохраняется в этом браузере. При запуске внутри Telegram будет отдельный локальный прогресс.';dialog.innerHTML=`<div class="dialog-heading"><h2>Твоя математика</h2><button class="dialog-close" data-close="info-dialog" aria-label="Закрыть">×</button></div><p>Тренажёр Фоксфорда по базовой математике ЕГЭ. ${taskCount(state.data.tasks.length)} с автоматической проверкой.</p><p>${mode}</p><button class="button outline" data-action="export">${icon('export',15)}Скачать свою историю</button>`;dialog.showModal()}
+function info(){const dialog=document.querySelector('#info-dialog');dialog.innerHTML=`<div class="dialog-heading"><h2>Твоя математика</h2><button class="dialog-close" data-close="info-dialog" aria-label="Закрыть">×</button></div><p>Тренажёр Фоксфорда по базовой математике ЕГЭ. ${taskCount(state.data.tasks.length)} с автоматической проверкой.</p><p data-cloud-status aria-live="polite">${esc(cloudStatusText())}</p>${telegramAccountId()?`<p>Аккаунт: ${esc(tg.initDataUnsafe.user.first_name||'Telegram')} · ID ${esc(telegramAccountId())}</p>`:''}<p>История старого бота хранится отдельно и пока не подключена.</p>${progressStore?.cloud?'<button class="button purple" data-action="progress-sync">Синхронизировать</button> ':''}<button class="button outline" data-action="export">${icon('export',15)}Скачать свою историю</button>`;dialog.showModal()}
 
 function exportProgress(){const blob=new Blob([JSON.stringify({exported_at:new Date().toISOString(),attempts:state.data.attempts},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='foxford-progress-'+dayKey()+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
@@ -733,6 +914,9 @@ document.addEventListener('click',async event=>{
   if(button.dataset.close)return document.getElementById(button.dataset.close).close();
   if(button.dataset.image){const dialog=document.querySelector('#image-dialog');dialog.querySelector('img').src=button.dataset.image;return dialog.showModal()}
   switch(button.dataset.action){
+    case 'progress-sync':return syncProgress(true);
+    case 'progress-import':return importLegacyProgress();
+    case 'progress-skip':return skipLegacyProgress();
     case 'variant-start':return requestCustomVariant();
     case 'variant-confirm':document.querySelector('#variant-replace-dialog').close();return beginCustomVariant();
     case 'variant-resume':return openCustomTask(state.data.customVariant?.variant.index||0);
